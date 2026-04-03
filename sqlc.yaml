@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - schema: "sql/schema"      # Path to your SQL schema or migrations
+    queries: "sql/queries"         # Path to your SQL queries
+    engine: "postgresql"         # postgresql, mysql, or sqlite
+    gen:
+      go:                        # Target language (go, python, typescript, etc.)
+
+        out: "internal/database"           # Directory for the generated code
+

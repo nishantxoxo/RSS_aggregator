@@ -2,6 +2,7 @@ package main
 
 import (
 	// "fmt"
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
@@ -9,7 +10,17 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	"github.com/nishantxoxo/rssag/internal/database"
+
+
+	_ "github.com/lib/pq"
 )
+
+type apiConfig struct {
+	DB *database.Queries
+}
+
+
 
 func main() {
 	// fmt.Println("hello")
@@ -22,6 +33,24 @@ func main() {
 		log.Fatal("port empty")
 	}
 
+	dbURL := os.Getenv("DB_URL")
+
+	if dbURL == "" {
+		log.Fatal("DB empty")
+	}
+
+  	conn, err :=	sql.Open("postgres", dbURL)
+
+	if err != nil {
+		log.Fatal("Cant connect to database")
+	}
+
+ 		
+	
+
+	apiCfg:= apiConfig{
+		DB: database.New(conn),
+	}
 
 	router:= chi.NewRouter()
 	router.Use(cors.Handler(
@@ -39,7 +68,7 @@ func main() {
 	
 	v1Router.Get("/healthz", handlerReadiness)
 	v1Router.Get("/err", HandlerErr)
-
+	v1Router.Post("/users", apiCfg.handlerCreateUser)
 	router.Mount("/v1", v1Router)
 
 	serv := &http.Server{
@@ -49,7 +78,7 @@ func main() {
 
 
 	log.Printf("Server startiung on Port %v", portString)
- 	err :=	serv.ListenAndServe()
+ 	err =	serv.ListenAndServe()
 
 	if err != nil {
 		log.Fatal(err)
