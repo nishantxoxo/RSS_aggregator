@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/nishantxoxo/rssag/internal/database"
 )
 
@@ -65,7 +67,29 @@ func scrapeFeed(db *database.Queries, wg *sync.WaitGroup, feed database.Feed){
 	}
 
 	 for _, item := range RSSFeed.Channel.Item{
-		log.Println("found post", item.Title)
+		// 1log.Println("found post", item.Title, " on feed ", feed.Name)
+
+		desc := sql.NullString{}
+		if item.Description != ""{
+			desc.String = item.Description
+			desc.Valid = true}
+
+		db.CreatePost(context.Background(),
+		
+		
+		
+		
+		database.CreatePostParams{
+		 ID:	uuid.New(),
+		CreatedAt:	time.Now().UTC(),
+		UpdatedAt  :	time.Now().UTC(),
+			Title : item.Title,
+			Description: desc,
+				PublishedAt
+
+		})
+
+
 	 }
 	 log.Printf( " feed %s collected, %v posts found ", feed.Name, len(RSSFeed.Channel.Item))
 
