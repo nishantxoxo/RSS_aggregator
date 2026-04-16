@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -74,20 +75,31 @@ func scrapeFeed(db *database.Queries, wg *sync.WaitGroup, feed database.Feed){
 			desc.String = item.Description
 			desc.Valid = true}
 
-		db.CreatePost(context.Background(),
-		
-		
-		
-		
+
+		pubAt, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err != nil {
+			log.Printf("couldnt parase date  %v with err %v", item.PubDate, err)
+			continue
+		}
+		_, err=	db.CreatePost(context.Background(),
 		database.CreatePostParams{
 		 ID:	uuid.New(),
 		CreatedAt:	time.Now().UTC(),
 		UpdatedAt  :	time.Now().UTC(),
 			Title : item.Title,
 			Description: desc,
-				PublishedAt
+			PublishedAt: pubAt,
+			Url: item.Link,
+			FeedID: feed.ID,
 
 		})
+
+		if err != nil {
+				if strings.Contains(err.Error(), "duplicate key"){
+					continue
+				}
+				log.Println("failed to create post", err)
+		}
 
 
 	 }
